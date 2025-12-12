@@ -430,22 +430,15 @@ app.listen(PORT, () => {
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   LibreOffice: Checking...`);
   
-  // Pre-warm LibreOffice to avoid first-request delay
-  exec('libreoffice --version', (error, stdout, stderr) => {
+  // Verify LibreOffice is installed (non-blocking)
+  exec('libreoffice --version', { timeout: 5000 }, (error, stdout, stderr) => {
     if (error) {
       console.error(`   ⚠️ LibreOffice not found: ${error.message}`);
     } else {
       console.log(`   ✅ LibreOffice: ${stdout.trim()}`);
-      
-      // Run a lightweight command to fully initialize LibreOffice
-      console.log(`   🔥 Pre-warming LibreOffice...`);
-      exec('libreoffice --headless --version', (warmError, warmStdout, warmStderr) => {
-        if (warmError) {
-          console.warn(`   ⚠️ LibreOffice pre-warm warning: ${warmError.message}`);
-        } else {
-          console.log(`   ✅ LibreOffice pre-warmed and ready`);
-        }
-      });
+      console.log(`   ✅ Service ready - LibreOffice will initialize on first conversion`);
+      // Note: Pre-warming removed to avoid hanging. With min_machines_running=1,
+      // the service stays running and LibreOffice will be ready for first request.
     }
   });
 });
